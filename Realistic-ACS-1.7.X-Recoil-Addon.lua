@@ -10,7 +10,9 @@ local StockedCFrame2,Stocked
 
 StockedCFrame2,Stocked = nil,nil
 
--- put in function recoil, outside and after spawn
+-- change spawn to task.spawn in function recoil
+
+-- put in function recoil, outside and after task.spawn
 
 local new = Instance.new("Part")
 new.CanCollide = false
