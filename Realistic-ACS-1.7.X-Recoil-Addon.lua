@@ -1,3 +1,5 @@
+-- test game: https://www.roblox.com/games/10326782956/ACS-1-7-but-Edited-Recoil
+
 -- all uncommented code here is supposed to be put inside acs_client
 
 -- put outside before function unset
