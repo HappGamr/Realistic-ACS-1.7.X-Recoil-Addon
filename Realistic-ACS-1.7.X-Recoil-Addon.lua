@@ -2,7 +2,7 @@
 
 -- all uncommented code here is supposed to be put inside acs_client
 
--- put outside before function unset
+-- put the code below outside before function unset
 
 local StockedCFrame2,Stocked
 
@@ -12,7 +12,7 @@ StockedCFrame2,Stocked = nil,nil
 
 -- change spawn to task.spawn in function recoil
 
--- put in function recoil, outside and after task.spawn
+-- put the code below in function recoil, outside and after task.spawn
 
 local new = Instance.new("Part")
 new.CanCollide = false
@@ -49,7 +49,7 @@ Recoil = new2.CFrame:ToObjectSpace(BPCF)
 new:Destroy()
 new2:Destroy()
 
--- put in personagem.childadded after all possible function calls
+-- put the code below in personagem.childadded after all possible function calls
 
 local StockPart,sizee
 if ArmaClone:FindFirstChild("SmokePart") ~= nil then
