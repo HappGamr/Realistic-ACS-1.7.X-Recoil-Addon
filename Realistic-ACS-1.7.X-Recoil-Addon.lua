@@ -12,6 +12,8 @@ StockedCFrame2,Stocked = nil,nil
 
 -- change spawn to task.spawn in function recoil
 
+-- Remove "Recoil:lerp(" and ",1)" so it should look something like "Recoil = Recoil*Cframe..."
+
 -- put the code below in function recoil, outside and after task.spawn
 
 local new = Instance.new("Part")
@@ -110,3 +112,4 @@ if Stocked then
 	StockedCFrame2 = ArmaClone.Handle.CFrame:ToObjectSpace(StockedCFrame)
 	HeadBase.CFrame *= rotsave
 end
+
