@@ -2,7 +2,7 @@ An add-on for ACS 1.7.X that is designed to make the gun rotate around a certain
 
 AI generated readme:
 
-# Realistic ACS 1.7.X Recoil Addon
+# Custom-Pivot-Recoil-for-ACS-1.7.X
 
 An add-on for ACS 1.7.X that enhances the recoil system in Roblox games by making recoil rotations more realistic. Instead of rotating around the default HeadBase/BasePart (camera), this addon dynamically detects weapon stocks (e.g., on rifles) and anchors recoil to a computed point on the stock for shouldered firing. For non-stocked weapons (e.g., pistols), it falls back to a predefined offset. This improves immersion and gameplay feel in FPS experiences built with ACS.
 
