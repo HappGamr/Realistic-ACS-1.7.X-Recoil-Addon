@@ -12,17 +12,32 @@ StockedCFrame2,Stocked = nil,nil
 
 -- change spawn to task.spawn in function recoil
 
--- Remove "Recoil:lerp(" and ",1)" so it should look something like "Recoil = Recoil*Cframe..."
+-- Remove "Recoil:lerp(" and ",1)" in function recoil so it should look something like "Recoil = Recoil*Cframe..."
 
--- put the code below in function recoil, outside and after task.spawn
+-- put the code below outside and before function recoil
 
-local new = Instance.new("Part")
+local new = game.Workspace.Camera:FindFirstChild("NewRecoil") or Instance.new("Part")
 new.CanCollide = false
 new.Anchored = true
-new.Transparency = 0.5
+new.Transparency = 1
 new.Parent = game.Workspace.Camera
 new.Size = Vector3.new(0.1,0.1,0.1)
 new.Name = "NewRecoil"
+
+local new2 = game.Workspace.Camera:FindFirstChild("NewRecoil3") or Instance.new("Part")
+new2.CanCollide = false
+new2.Anchored = false
+new2.Transparency = 1
+new2.Parent = game.Workspace.Camera
+new2.Size = Vector3.new(0.1,0.1,0.1)
+new2.Name = "NewRecoil3"
+
+local new3 = new:FindFirstChildWhichIsA("Motor6D") or Instance.new("Motor6D")
+new3.Parent = new
+new3.Part0 = new
+new3.Part1 = new2
+
+-- put the code below in function recoil, outside and after task.spawn
 
 if Stocked and StockedCFrame2 ~= nil then
 	new.CFrame = ArmaClone.Handle.CFrame * StockedCFrame2
@@ -30,26 +45,10 @@ else
 	new.CFrame = ArmaClone.Handle.CFrame * CFrame.new(0, 0.0591001511, 0.466899931, 1.00000012, -8.92215013e-08, 0, 8.9592433e-08, 1.00000012, 0, -5.45696821e-12, -9.09494702e-13, 1)
 end
 
-local new2 = Instance.new("Part")
-new2.CanCollide = false
-new2.Anchored = false
-new2.Transparency = 0.5
-new2.Parent = game.Workspace.Camera
-new2.Size = Vector3.new(0.1,0.1,0.1)
-new2.Name = "NewRecoil3"
-
-local new3 = Instance.new("Motor6D")
-new3.Parent = new
-new3.Part0 = new
-new3.Part1 = new2
-
 local BPCF = game.Workspace.Camera.BasePart.CFrame
 
 new3.C1 = BPCF:ToObjectSpace(new.CFrame) * Recoil
 Recoil = new2.CFrame:ToObjectSpace(BPCF)
-
-new:Destroy()
-new2:Destroy()
 
 -- put the code below in personagem.childadded after all possible function calls
 
@@ -112,4 +111,5 @@ if Stocked then
 	StockedCFrame2 = ArmaClone.Handle.CFrame:ToObjectSpace(StockedCFrame)
 	HeadBase.CFrame *= rotsave
 end
+
 
