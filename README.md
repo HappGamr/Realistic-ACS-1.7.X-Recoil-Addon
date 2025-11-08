@@ -2,45 +2,39 @@ An add-on for ACS 1.7.X that is designed to make the gun rotate around a certain
 
 AI generated readme:
 
-# ACS 1.7 Recoil Edit
+# Realistic ACS 1.7.X Recoil Addon
 
-[![Roblox](https://img.shields.io/badge/Platform-Roblox-blue.svg)](https://www.roblox.com)
-[![Lua](https://img.shields.io/badge/Language-Lua-orange.svg)](https://www.lua.org)
-[![Version](https://img.shields.io/badge/ACS_Version-1.7-green.svg)](https://devforum.roblox.com/t/acs-advanced-combat-system-robloxs-1-fps-combat-system/1285741)
+An add-on for ACS 1.7.X that enhances the recoil system in Roblox games by making recoil rotations more realistic. Instead of rotating around the default HeadBase/BasePart (camera), this addon dynamically detects weapon stocks (e.g., on rifles) and anchors recoil to a computed point on the stock for shouldered firing. For non-stocked weapons (e.g., pistols), it falls back to a predefined offset. This improves immersion and gameplay feel in FPS experiences built with ACS.
+
+Tested in: [ACS 1.7 but Edited Recoil](https://www.roblox.com/games/10326782956/ACS-1-7-but-Edited-Recoil)
 
 ## Overview
 
-This repository contains modifications to the [Advanced Combat System (ACS)](https://devforum.roblox.com/t/acs-advanced-combat-system-robloxs-1-fps-combat-system/1285741), a popular open-source FPS gun framework for Roblox. ACS is widely used in Roblox games for creating realistic first-person shooter mechanics, including weapons, recoil, animations, and combat systems. It has been adopted in over 100,000 games and has an active community on Discord and the Roblox Developer Forum.
+ACS (Advanced Combat System) is a popular open-source FPS gun framework for Roblox, used in thousands of games for handling weapons, animations, and combat mechanics. This addon specifically targets the recoil functions in ACS version 1.7.X to provide more physically accurate behavior:
 
-The specific edits here focus on improving the recoil system in ACS version 1.7. The changes enhance recoil handling for weapons with stocks (e.g., rifles), by dynamically detecting stock parts and adjusting CFrame calculations for more accurate and realistic shoulder-mounted recoil simulation. This prevents unnatural recoil behavior on stocked weapons and improves overall gameplay feel.
+- **Dynamic Stock Detection**: Scans the weapon model for potential stock parts based on distance thresholds from the muzzle (SmokePart) to visible BaseParts, excluding magazines, bolts, etc.
+- **Custom Recoil Pivot**: Uses reusable temporary parts in the Workspace.Camera to calculate and apply recoil CFrames relative to the stock point or a default offset.
+- **Performance Optimizations**: Reuses parts instead of creating/destroying them per recoil event, replaces deprecated `spawn` with `task.spawn`, and removes unnecessary lerp calls for direct CFrame multiplication.
+- **Compatibility**: Designed for ACS 1.7.X client-side scripts. May require minor adaptations for ACS 2.0 or community forks, as ACS has evolved and been deprecated in some versions.
 
-These modifications are based on client-side Lua scripts and are intended for integration into the `acs_client` module. They were tested in the Roblox place: [ACS 1.7 but Edited Recoil](https://www.roblox.com/games/10326782956/ACS-1-7-but-Edited-Recoil).
-
-**Key Improvements:**
-- Dynamic detection of weapon stocks using part distances and sizes.
-- Custom CFrame adjustments for stocked vs. non-stocked weapons.
-- Use of temporary parts in the camera workspace for precise recoil interpolation.
-- Compatibility with ACS 1.7's existing recoil functions.
-
-**Note:** ACS has evolved with versions like 2.0 (now deprecated in some forks). If you're using a newer version, these edits may require adaptation. Always test in a development place to avoid breaking core functionality.
+This addon assumes you're familiar with Roblox scripting and ACS's structure. It modifies the `acs_client` script (typically found in ReplicatedStorage or a weapon module).
 
 ## Prerequisites
 
-- **Roblox Studio**: Required for editing and testing scripts.
-- **ACS 1.7 Framework**: Download from the official ACS resources on the Roblox Developer Forum or community forks. (Search for "ACS 1.7 Roblox" for assets.)
-- Basic knowledge of Lua scripting and Roblox's Workspace/CFrame system.
-- A test Roblox place for integration (e.g., the linked game above).
+- Roblox Studio installed.
+- ACS 1.7.X framework (available from the [Roblox Developer Forum ACS thread](https://devforum.roblox.com/t/acs-advanced-combat-system-robloxs-1-fps-combat-system/1285741) or community forks).
+- Basic knowledge of Lua, Roblox Workspace, CFrames, and event handling.
+- A test Roblox place with ACS integrated (e.g., the linked test game).
 
 ## Installation and Usage
 
-These modifications are provided as code snippets with placement instructions. Integrate them into your existing `acs_client` script (typically found in ReplicatedStorage or a similar module in ACS setups).
+Integrate these modifications into your `acs_client` script. All changes are client-side for recoil handling. Backup your original script before editing.
 
 ### Step 1: Locate the `acs_client` Script
-- Open your Roblox place in Studio.
-- Find the `acs_client` script (client-side module for ACS handling recoil, animations, etc.).
+Open your Roblox place in Studio. Find the `acs_client` script responsible for weapon handling, recoil, and character events (often in ReplicatedStorage or a LocalScript).
 
 ### Step 2: Add Global Variables
-Before the `unset` function definition, add these variables:
+Place this before the `unset` function definition:
 
 ```lua
 local StockedCFrame2, Stocked
@@ -53,52 +47,51 @@ Inside the `unset` function, add this to reset the variables:
 StockedCFrame2, Stocked = nil, nil
 ```
 
-### Step 4: Update the `recoil` Function
-- Replace any `spawn` calls with `task.spawn` for better performance (Roblox's recommended coroutine handling).
-- Modify the Recoil assignment line: Remove `"Recoil:lerp("` and `",1)"` so it becomes something like `Recoil = Recoil * CFrame...` (adjust based on your exact ACS version's syntax).
-- After the `task.spawn` block (outside and after it), add this code to handle recoil with temporary parts:
+### Step 4: Create Reusable Recoil Parts
+Place this outside and before the `recoil` function definition. These parts are created once (if not found) and reused for efficiency:
 
 ```lua
-local new = Instance.new("Part")
+local new = game.Workspace.Camera:FindFirstChild("NewRecoil") or Instance.new("Part")
 new.CanCollide = false
 new.Anchored = true
-new.Transparency = 0.5
+new.Transparency = 1
 new.Parent = game.Workspace.Camera
 new.Size = Vector3.new(0.1, 0.1, 0.1)
 new.Name = "NewRecoil"
 
+local new2 = game.Workspace.Camera:FindFirstChild("NewRecoil3") or Instance.new("Part")
+new2.CanCollide = false
+new2.Anchored = false
+new2.Transparency = 1
+new2.Parent = game.Workspace.Camera
+new2.Size = Vector3.new(0.1, 0.1, 0.1)
+new2.Name = "NewRecoil3"
+
+local new3 = new:FindFirstChildWhichIsA("Motor6D") or Instance.new("Motor6D")
+new3.Parent = new
+new3.Part0 = new
+new3.Part1 = new2
+```
+
+### Step 5: Update the `recoil` Function
+- Replace all `spawn` calls with `task.spawn` for better threading performance.
+- Remove `"Recoil:lerp("` and `",1)"` from the Recoil assignment line, so it becomes something like `Recoil = Recoil * CFrame...` (adjust based on your exact ACS version).
+- After the `task.spawn` block (outside it), add this to apply the custom recoil pivot:
+
+```lua
 if Stocked and StockedCFrame2 ~= nil then
     new.CFrame = ArmaClone.Handle.CFrame * StockedCFrame2
 else
     new.CFrame = ArmaClone.Handle.CFrame * CFrame.new(0, 0.0591001511, 0.466899931, 1.00000012, -8.92215013e-08, 0, 8.9592433e-08, 1.00000012, 0, -5.45696821e-12, -9.09494702e-13, 1)
 end
 
-local new2 = Instance.new("Part")
-new2.CanCollide = false
-new2.Anchored = false
-new2.Transparency = 0.5
-new2.Parent = game.Workspace.Camera
-new2.Size = Vector3.new(0.1, 0.1, 0.1)
-new2.Name = "NewRecoil3"
-
-local new3 = Instance.new("Motor6D")
-new3.Parent = new
-new3.Part0 = new
-new3.Part1 = new2
-
 local BPCF = game.Workspace.Camera.BasePart.CFrame
-
 new3.C1 = BPCF:ToObjectSpace(new.CFrame) * Recoil
 Recoil = new2.CFrame:ToObjectSpace(BPCF)
-
-new:Destroy()
-new2:Destroy()
 ```
 
-This creates temporary debug parts in the camera to calculate and apply recoil offsets, improving precision for stocked weapons.
-
-### Step 5: Modify `personagem.ChildAdded` Event
-After all existing function calls in the `personagem.ChildAdded` event handler (where `ArmaClone` is typically processed), add this code to detect and configure stocked weapons:
+### Step 6: Modify the `personagem.ChildAdded` Event
+In the `personagem.ChildAdded` event handler (where `ArmaClone` is processed), add this after all existing function calls. This detects if the weapon is stocked and computes the relative CFrame:
 
 ```lua
 local StockPart, sizee
@@ -109,14 +102,14 @@ if ArmaClone:FindFirstChild("SmokePart") ~= nil then
         pos2aa = ArmaClone.Trigger.Position
     else
         pos2aa = ArmaClone.Handle.Position
-    end    
+    end
     local pos1topos2 = (pos1aa - pos2aa).magnitude
     local Stock = 0
     Stocked = false
     for _, i in pairs(ArmaClone:GetChildren()) do
         if i:IsA("BasePart") and i.Name ~= "Mag" and i.Name ~= "Bolt" and i.Name ~= "Slide" and i.Name ~= "Silenciador" and i.Name ~= "Shell" and i.Transparency ~= 1 then
             local sizehalf = math.max(i.Size.X, i.Size.Y, i.Size.Z) / 2
-            local Distance = (pos1aa - i.Position).magnitude + sizehalf - pos1topos2                        
+            local Distance = (pos1aa - i.Position).magnitude + sizehalf - pos1topos2
             if Distance > Stock then
                 Stock = Distance
                 StockPart = i
@@ -127,7 +120,7 @@ if ArmaClone:FindFirstChild("SmokePart") ~= nil then
             end
         end
     end
-end 
+end
 
 if Stocked then
     local rotsave = HeadBase.CFrame.Rotation
@@ -136,9 +129,7 @@ if Stocked then
     local pos1aa = ArmaClone.SmokePart.Position
     local pos1, pos2, pos3, pos4, pos5, pos6 = (p0s1 - pos1aa).magnitude, (p0s2 - pos1aa).magnitude, (p0s3 - pos1aa).magnitude, (p0s4 - pos1aa).magnitude, (p0s5 - pos1aa).magnitude, (p0s6 - pos1aa).magnitude
     local farthest = math.max(pos1, pos2, pos3, pos4, pos5, pos6)
-
-    local StockedCFrame 
-
+    local StockedCFrame
     if farthest == pos1 then
         StockedCFrame = CFrame.new(p0s1)
     elseif farthest == pos2 then
@@ -151,39 +142,36 @@ if Stocked then
         StockedCFrame = CFrame.new(p0s5)
     elseif farthest == pos6 then
         StockedCFrame = CFrame.new(p0s6)
-    end    
-
+    end
     local BP = ArmaClone.Handle.Orientation
-
     StockedCFrame *= CFrame.Angles(math.rad(BP.X), math.rad(BP.Y), math.rad(BP.Z))
-
     StockedCFrame2 = ArmaClone.Handle.CFrame:ToObjectSpace(StockedCFrame)
     HeadBase.CFrame *= rotsave
 end
 ```
 
-This logic scans the weapon model for the farthest qualifying part (simulating a stock) and computes a relative CFrame for recoil anchoring.
-
-### Step 6: Testing
+### Step 7: Testing
 - Publish your place or test in Studio.
-- Equip a stocked weapon (e.g., a rifle) and fire to observe improved recoil.
-- For non-stocked weapons (e.g., pistols), fallback CFrame is used.
-- Debug with print statements if needed, and adjust the stock detection threshold (`1.22`) for your models.
+- Equip a weapon (stocked like a rifle or non-stocked like a pistol).
+- Fire and observe the recoil: It should pivot from the stock point for realism on rifles, reducing unnatural camera jolts.
+- Adjust the stock detection threshold (`1.22`) if needed for your weapon models.
+- Monitor performance in high-fire-rate scenarios; the reusable parts should minimize lag compared to creating/destroying instances.
 
 ## Potential Issues and Fixes
-- **CFrame Precision**: Floating-point values may vary slightly; test on multiple devices.
-- **Performance**: Temporary parts are destroyed immediately, but high fire rates could cause minor lag—optimize if needed.
-- **Compatibility**: If using ACS 2.0 or forks (e.g., edited versions from DevForum), verify variable names like `ArmaClone`, `HeadBase`, etc.
-- **Roblox Updates**: CFrame and Instance changes in Roblox could break this; monitor DevForum for patches.
+
+- **CFrame Precision**: Test on different devices/resolutions, as floating-point errors in CFrames can cause minor misalignments.
+- **Performance**: If lag occurs with rapid fire, ensure `task.spawn` is used correctly. The reusable parts avoid instance overhead.
+- **Compatibility**: Variable names like `ArmaClone`, `HeadBase`, `SmokePart` must match your ACS setup. For ACS 2.0+, adapt event handlers and recoil logic.
+- **Roblox Updates**: Engine changes (e.g., to Workspace or CFrame handling) may require tweaks. Check the Roblox Developer Forum for ACS updates.
+- **Invisible Parts**: The parts have `Transparency = 1` for production; set to `0.5` during debugging to visualize them.
 
 ## Contributing
-Feel free to fork this repo and submit pull requests for improvements, such as support for newer ACS versions or additional weapon types.
 
-## Resources
-- [Official ACS DevForum Thread](https://devforum.roblox.com/t/acs-advanced-combat-system-robloxs-1-fps-combat-system/1285741)
-- [ACS Community Discord](https://discord.com/invite/advanced-combat-system-community-827005719454810173)
-- [Test Game](https://www.roblox.com/games/10326782956/ACS-1-7-but-Edited-Recoil)
-- Related Tutorials: Search YouTube for "How to Add ACS Guns in Roblox Studio"
+Fork this repository and submit pull requests for improvements, such as:
+- Support for newer ACS versions.
+- Enhanced stock detection for custom weapon models.
+- Additional recoil customization options.
 
 ## License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. (Note: ACS itself is open-source; respect original creators' terms.)
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. Respect the terms of the original ACS framework.
